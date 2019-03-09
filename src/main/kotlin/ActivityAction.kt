@@ -12,39 +12,72 @@ import java.util.*
 class ActivityAction : AnAction() {
 
     companion object {
-        private val currentActivityCommand = """
-            adb shell dumpsys window windows | grep -E 'mFocusedApp' | cut -d ' ' -f 7
-        """.trimIndent()
 
         private const val errorNoActivity = "Could not find activity."
-        private const val errorCommand = "Error running command."
+
+        private fun currentActivityCommand(adb: String) = """
+           $adb shell dumpsys window windows | grep -E 'mFocusedApp' | cut -d ' ' -f 7
+        """.trimIndent()
     }
 
+
+    private val adbPath by lazy {
+        if (AdbFinder.isAdbInstalled()) {
+            AdbFinder.adbPath(event.project!!)
+        } else ""
+    }
+
+    lateinit var event: AnActionEvent
 
     override fun actionPerformed(e: AnActionEvent) {
-        runCommand(e)
+        event = e
+        runWithAdb()
     }
 
+    private fun runWithAdb() {
 
-    private fun runCommand(event: AnActionEvent) {
+        if (adbPath.isNotBlank()) {
+
+            currentActivityCommand(adbPath).exect {
+
+                when (it.type) {
+
+                    MessageType.INFO -> popup(it.message, it.type)
+
+                    MessageType.WARNING -> popup(errorNoActivity, it.type)
+
+                    MessageType.ERROR -> popup("Error running adb command : ${it.message}", it.type)
+                }
+            }
+
+        } else {
+            popup("Could not find adb.")
+        }
+    }
+
+    fun String.exect(block: (Result) -> Unit) {
         val sb = StringBuilder()
         try {
-            val p = Runtime.getRuntime().exec(currentActivityCommand)
+
+            val p = Runtime.getRuntime().exec(this)
             val sc = Scanner(p.inputStream)
             while (sc.hasNext()) sb.append(sc.nextLine())
 
             if (sb.toString().trim().isNotBlank()) {
-                popup(sb.toString().trim(), event = event)
+                block.invoke(Result(sb.toString().trim(), MessageType.INFO))
             } else {
-                popup(errorNoActivity, type = MessageType.WARNING, event = event)
+                block.invoke(Result("Empty adb Activity return.", MessageType.WARNING))
             }
 
         } catch (e: Exception) {
-            popup(errorCommand, type = MessageType.ERROR, event = event)
+            block.invoke(Result("${e.message}", MessageType.WARNING))
         }
     }
 
-    private fun popup(text: String, type: MessageType = MessageType.INFO, event: AnActionEvent) {
+
+    data class Result(val message: String, val type: MessageType)
+
+    private fun popup(text: String, type: MessageType = MessageType.INFO) {
 
         val statusBar = WindowManager.getInstance()
                 .getStatusBar(DataKeys.PROJECT.getData(event.dataContext))
