@@ -20,5 +20,14 @@
 
     <actions>
         <!-- Add your actions here -->
+        <action
+            id="kwick.action.activity"
+            class="ActivityAction"
+            text="kwick Activity"
+            description="Print the current activity">
+            <add-to-group
+                group-id="ToolsMenu"
+                anchor="last"/>
+        </action>
     </actions>
 </idea-plugin>
