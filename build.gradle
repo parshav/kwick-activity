@@ -4,10 +4,13 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.3.11'
 }
 
+
 group 'com.pv'
-version '0.1'
+version '1'
 
 sourceCompatibility = 1.8
+
+apply plugin: 'org.jetbrains.intellij'
 
 repositories {
     mavenCentral()
@@ -26,9 +29,9 @@ compileTestKotlin {
 }
 intellij {
     version '2018.3.3'
-}
-patchPluginXml {
-    changeNotes """
-      Add change notes here.<br>
-      <em>most HTML tags may be used</em>"""
+    plugins 'android'
+
+    updateSinceUntilBuild false
+    sameSinceUntilBuild false
+
 }

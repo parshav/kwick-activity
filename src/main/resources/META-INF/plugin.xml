@@ -1,24 +1,36 @@
 <idea-plugin>
-    <id>com.pv.pv</id>
-    <name>Plugin display name here</name>
-    <vendor email="support@yourcompany.com" url="http://www.yourcompany.com">YourCompany</vendor>
+    <idea-version since-build="131"/>
+    <version>1</version>
+    <id>com.pv.kwick.activity</id>
+    <name>Kwick Activity</name>
+    <vendor email="parshav@live.com" url="https://github.com/parshav/kwick-activity">pv</vendor>
 
-    <description><![CDATA[
-    Enter short description for your plugin here.<br>
-    <em>most HTML tags may be used</em>
-    ]]></description>
+    <description>
+        Plugin that displays the current Android activity running with a popup balloon.
+    </description>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->
-    <!-- uncomment to enable plugin in all products
+
     <depends>com.intellij.modules.lang</depends>
-    -->
+    <depends>org.jetbrains.android</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <!-- Add your extensions here -->
+        <defaultProjectTypeProvider type="Android"/>
     </extensions>
 
     <actions>
         <!-- Add your actions here -->
+        <action
+            id="kwick.action.activity"
+            class="ActivityAction"
+            text="kwick Activity"
+            description="Print the current activity"
+            project-type="Android">
+
+            <add-to-group
+                group-id="ToolsMenu"
+                anchor="last"/>
+        </action>
     </actions>
 </idea-plugin>
