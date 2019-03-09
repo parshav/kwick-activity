@@ -1,7 +1,9 @@
 <idea-plugin>
+    <idea-version since-build="131"/>
+    <version>1</version>
     <id>com.pv.kwick.activity</id>
     <name>kwick Activity</name>
-    <vendor email="parshav@live.com" url="http://www.yourcompany.com">pv</vendor>
+    <vendor email="parshav@live.com" url="https://github.com/parshav/kwick-activity">pv</vendor>
 
     <description>
         Plugin that displays the current Android activity running with a popup balloon.
@@ -11,12 +13,11 @@
          on how to target different products -->
 
     <depends>com.intellij.modules.lang</depends>
+    <depends>org.jetbrains.android</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <!-- Add your extensions here -->
+        <defaultProjectTypeProvider type="Android"/>
     </extensions>
-
-    <idea-version since-build="173"/>
 
     <actions>
         <!-- Add your actions here -->
