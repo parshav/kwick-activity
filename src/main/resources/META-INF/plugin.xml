@@ -2,7 +2,7 @@
     <idea-version since-build="131"/>
     <version>1</version>
     <id>com.pv.kwick.activity</id>
-    <name>kwick Activity</name>
+    <name>Kwick Activity</name>
     <vendor email="parshav@live.com" url="https://github.com/parshav/kwick-activity">pv</vendor>
 
     <description>
