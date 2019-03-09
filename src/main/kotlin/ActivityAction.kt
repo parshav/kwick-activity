@@ -1,11 +1,9 @@
+import com.intellij.notification.NotificationGroup
+import com.intellij.notification.NotificationType
+import com.intellij.notification.Notifications
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.DataKeys
-import com.intellij.openapi.ui.MessageType
-import com.intellij.openapi.ui.popup.Balloon
-import com.intellij.openapi.ui.popup.JBPopupFactory
-import com.intellij.openapi.wm.WindowManager
-import com.intellij.ui.awt.RelativePoint
+import com.intellij.openapi.application.ApplicationManager
 import java.util.*
 
 
@@ -13,11 +11,15 @@ class ActivityAction : AnAction() {
 
     companion object {
 
+        private const val `notification title` = "kwick Activity"
         private const val errorNoActivity = "Could not find activity."
+
+        private val NOTIFICATION_GROUP = NotificationGroup.balloonGroup(`notification title`)
 
         private fun currentActivityCommand(adb: String) = """
            $adb shell dumpsys window windows | grep -E 'mFocusedApp' | cut -d ' ' -f 7
         """.trimIndent()
+
     }
 
 
@@ -27,7 +29,7 @@ class ActivityAction : AnAction() {
         } else ""
     }
 
-    lateinit var event: AnActionEvent
+    private lateinit var event: AnActionEvent
 
     override fun actionPerformed(e: AnActionEvent) {
         event = e
@@ -38,20 +40,23 @@ class ActivityAction : AnAction() {
 
         if (adbPath.isNotBlank()) {
 
-            currentActivityCommand(adbPath).exect {
+            val r = Runnable {
+                currentActivityCommand(adbPath).exect {
 
-                when (it.type) {
+                    when (it.type) {
 
-                    MessageType.INFO -> popup(it.message, it.type)
+                        NotificationType.INFORMATION -> popup(it.message, it.type)
 
-                    MessageType.WARNING -> popup(errorNoActivity, it.type)
+                        NotificationType.WARNING -> popup(errorNoActivity, it.type)
 
-                    MessageType.ERROR -> popup("Error running adb command : ${it.message}", it.type)
+                        NotificationType.ERROR -> popup("Error running adb command : ${it.message}", it.type)
+                    }
                 }
             }
+            r.run()
 
         } else {
-            popup("Could not find adb.")
+            popup("Could not find adb.", NotificationType.WARNING)
         }
     }
 
@@ -60,32 +65,32 @@ class ActivityAction : AnAction() {
         try {
 
             val p = Runtime.getRuntime().exec(this)
+            p.waitFor()
+
             val sc = Scanner(p.inputStream)
             while (sc.hasNext()) sb.append(sc.nextLine())
 
             if (sb.toString().trim().isNotBlank()) {
-                block.invoke(Result(sb.toString().trim(), MessageType.INFO))
+                block.invoke(Result(sb.toString().trim(), NotificationType.INFORMATION))
             } else {
-                block.invoke(Result("Empty adb Activity return.", MessageType.WARNING))
+                block.invoke(Result("Empty adb Activity return.", NotificationType.WARNING))
             }
 
         } catch (e: Exception) {
-            block.invoke(Result("${e.message}", MessageType.WARNING))
+            block.invoke(Result("${e.message}", NotificationType.ERROR))
         }
     }
 
 
-    data class Result(val message: String, val type: MessageType)
+    data class Result(val message: String, val type: NotificationType)
 
-    private fun popup(text: String, type: MessageType = MessageType.INFO) {
 
-        val statusBar = WindowManager.getInstance()
-                .getStatusBar(DataKeys.PROJECT.getData(event.dataContext))
+    fun popup(message: String, type: NotificationType) {
 
-        JBPopupFactory.getInstance()
-                .createHtmlTextBalloonBuilder(text, type, null)
-                .setFadeoutTime(5000)
-                .createBalloon()
-                .show(RelativePoint.getCenterOf(statusBar.component), Balloon.Position.atRight)
+
+        ApplicationManager.getApplication().invokeLater {
+            val notification = NOTIFICATION_GROUP.createNotification(`notification title`, message, type, null)
+            Notifications.Bus.notify(notification)
+        }
     }
 }

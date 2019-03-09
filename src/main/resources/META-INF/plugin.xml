@@ -25,7 +25,9 @@
             id="kwick.action.activity"
             class="ActivityAction"
             text="kwick Activity"
-            description="Print the current activity">
+            description="Print the current activity"
+            project-type="Android">
+
             <add-to-group
                 group-id="ToolsMenu"
                 anchor="last"/>
