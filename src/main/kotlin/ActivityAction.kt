@@ -15,6 +15,9 @@ class ActivityAction : AnAction() {
         private val currentActivityCommand = """
             adb shell dumpsys window windows | grep -E 'mFocusedApp' | cut -d ' ' -f 7
         """.trimIndent()
+
+        private const val errorNoActivity = "Could not find activity."
+        private const val errorCommand = "Error running command."
     }
 
 
@@ -33,11 +36,11 @@ class ActivityAction : AnAction() {
             if (sb.toString().trim().isNotBlank()) {
                 popup(sb.toString().trim(), event = event)
             } else {
-                popup("Could not find activity.", type = MessageType.WARNING, event = event)
+                popup(errorNoActivity, type = MessageType.WARNING, event = event)
             }
 
         } catch (e: Exception) {
-            popup("Error running command.", type = MessageType.ERROR, event = event)
+            popup(errorCommand, type = MessageType.ERROR, event = event)
         }
     }
 
